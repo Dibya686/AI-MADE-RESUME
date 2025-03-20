@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered Resume Builder</title>
+    <style>
+        /* Styling for the page */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 50px auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            color: #333;
+        }
+
+        input,
+        textarea,
+        button,
+        select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .generatedResume {
+            display: none;
+            padding: 20px;
+            margin-top: 30px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .resumeContent {
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .imagePreview {
+            max-width: 150px;
+            margin-bottom: 15px;
+        }
+
+        .resumeHeader {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .resumeHeader img {
+            width: 120px;
+            border-radius: 50%;
+        }
+
+        .resumeSection {
+            margin-bottom: 20px;
+        }
+
+        .resumeSection h3 {
+            margin-bottom: 10px;
+            color: #007bff;
+        }
+
+        .resumeSection p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>AI-Powered Resume Builder</h1>
+        
+        <!-- Template selection -->
+        <label for="templateSelect">Choose a Template</label>
+        <select id="templateSelect" name="templateSelect">
+            <option value="template1">Template 1: Basic</option>
+            <option value="template2">Template 2: Modern</option>
+            <option value="template3">Template 3: Professional</option>
+        </select>
+
+        <form id="resumeForm">
+            <!-- Photo Upload -->
+            <label for="photo">Upload Photo</label>
+            <input type="file" id="photo" name="photo" accept="image/*" onchange="previewImage(event)" />
+
+            <div id="photoPreviewContainer" style="display: none;">
+                <img id="photoPreview" class="imagePreview" src="" alt="Profile Photo" />
+            </div>
+
+            <!-- Personal Info -->
+            <label for="name">Full Name</label>
+            <input type="text" id="name" name="name" required />
+
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required />
+
+            <label for="phone">Phone Number</label>
+            <input type="text" id="phone" name="phone" required />
+
+            <label for="dob">Date of Birth</label>
+            <input type="date" id="dob" name="dob" required />
+
+            <!-- Dynamic form content based on template selection -->
+            <div id="dynamicFields"></div>
+
+            <button type="submit">Generate Resume</button>
+            <button type="button" id="downloadPDF" style="display: none;">Download Resume as PDF</button>
+        </form>
+
+        <div class="generatedResume" id="generatedResume">
+            <h2>Generated Resume</h2>
+            <div class="resumeContent" id="resumeContent"></div>
+        </div>
+    </div>
+
+    <!-- Include jsPDF library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <script>
+        // Function to preview uploaded photo
+        function previewImage(event) {
+            const reader = new FileReader();
+            reader.onload = function () {
+                const output = document.getElementById('photoPreview');
+                const previewContainer = document.getElementById('photoPreviewContainer');
+                output.src = reader.result;
+                previewContainer.style.display = 'block';
+            }
+            reader.readAsDataURL(event.target.files[0]);
+        }
+
+        // Function to render dynamic fields based on the template
+        function renderTemplateFields(template) {
+            let dynamicFields = document.getElementById("dynamicFields");
+            dynamicFields.innerHTML = ''; // Clear existing fields
+
+            if (template === "template1") {
+                dynamicFields.innerHTML = `
+                    <label for="experience">Professional Experience</label>
+                    <textarea id="experience" name="experience" rows="4" required></textarea>
+
+                    <label for="skills">Skills</label>
+                    <textarea id="skills" name="skills" rows="4" required></textarea>
+                    
+                    <label for="education">Education</label>
+                    <textarea id="education" name="education" rows="4" required></textarea>
+                `;
+            } else if (template === "template2") {
+                dynamicFields.innerHTML = `
+                    <label for="experience">Professional Experience</label>
+                    <textarea id="experience" name="experience" rows="4" required></textarea>
+
+                    <label for="internship">Internship Experience</label>
+                    <textarea id="internship" name="internship" rows="4"></textarea>
+
+                    <label for="skills">Skills</label>
+                    <textarea id="skills" name="skills" rows="4" required></textarea>
+                    
+                    <label for="education">Education</label>
+                    <textarea id="education" name="education" rows="4" required></textarea>
+
+                    <label for="languages">Languages Spoken</label>
+                    <input type="text" id="languages" name="languages" required />
+                `;
+            } else if (template === "template3") {
+                dynamicFields.innerHTML = `
+                    <label for="experience">Professional Experience</label>
+                    <textarea id="experience" name="experience" rows="4" required></textarea>
+
+                    <label for="internship">Internship Experience</label>
+                    <textarea id="internship" name="internship" rows="4"></textarea>
+
+                    <label for="skills">Skills</label>
+                    <textarea id="skills" name="skills" rows="4" required></textarea>
+                    
+                    <label for="education">Education</label>
+                    <textarea id="education" name="education" rows="4" required></textarea>
+
+                    <label for="languages">Languages Spoken</label>
+                    <input type="text" id="languages" name="languages" required />
+
+                    <label for="projects">Projects</label>
+                    <textarea id="projects" name="projects" rows="4"></textarea>
+
+                    <label for="achievements">Achievements</label>
+                    <textarea id="achievements" name="achievements" rows="4"></textarea>
+                `;
+            }
+        }
+
+        // Event listener for template selection
+        document.getElementById("templateSelect").addEventListener("change", function () {
+            const selectedTemplate = this.value;
+            renderTemplateFields(selectedTemplate);
+        });
+
+        // Initially render the fields for the first template
+        renderTemplateFields(document.getElementById("templateSelect").value);
+
+        document.getElementById("resumeForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            // Collect form data
+            const formData = new FormData(e.target);
+            const data = {
+                name: formData.get("name"),
+                email: formData.get("email"),
+                phone: formData.get("phone"),
+                dob: formData.get("dob"),
+                experience: formData.get("experience"),
+                internship: formData.get("internship"),
+                skills: formData.get("skills"),
+                education: formData.get("education"),
+                languages: formData.get("languages"),
+                projects: formData.get("projects"),
+                achievements: formData.get("achievements")
+            };
+
+            // Generate the resume content based on selected template
+            const selectedTemplate = document.getElementById("templateSelect").value;
+            let resumeText = "";
+
+            if (selectedTemplate === "template1") {
+                resumeText = `
+                Name: ${data.name}
+                Email: ${data.email}
+                Phone: ${data.phone}
+                Date of Birth: ${data.dob}
+                
+                Professional Experience:
+                ${data.experience}
+
+                Skills:
+                ${data.skills}
+
+                Education:
+                ${data.education}
+                `;
+            } else if (selectedTemplate === "template2") {
+                resumeText = `
+                Name: ${data.name}
+                Email: ${data.email}
+                Phone: ${data.phone}
+                Date of Birth: ${data.dob}
+
+                Professional Experience:
+                ${data.experience}
+
+                Internship Experience:
+                ${data.internship}
+
+                Skills:
+                ${data.skills}
+
+                Education:
+                ${data.education}
+
+                Languages Spoken:
+                ${data.languages}
+                `;
+            } else if (selectedTemplate === "template3") {
+                resumeText = `
+                Name: ${data.name}
+                Email: ${data.email}
+                Phone: ${data.phone}
+                Date of Birth: ${data.dob}
+
+                Professional Experience:
+                ${data.experience}
+
+                Internship Experience:
+                ${data.internship}
+
+                Skills:
+                ${data.skills}
+
+                Education:
+                ${data.education}
+
+                Languages Spoken:
+                ${data.languages}
+
+                Projects:
+                ${data.projects}
+
+                Achievements:
+                ${data.achievements}
+                `;
+            }
+
+            // Show the generated resume in the UI
+            document.getElementById("generatedResume").style.display = "block";
+            document.getElementById("resumeContent").textContent = resumeText;
+
+            // Show the download PDF button
+            document.getElementById("downloadPDF").style.display = "inline-block";
+
+            // Store the resume content for PDF generation
+            window.generatedResumeText = resumeText;
+        });
+
+        // Download Resume as PDF
+        document.getElementById("downloadPDF").addEventListener("click", function () {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Add the photo to the PDF (if a photo is uploaded)
+            if (document.getElementById('photoPreview').src) {
+                doc.addImage(document.getElementById('photoPreview').src, 'JPEG', 10, 10, 30, 30);
+            }
+
+            // Add resume content
+            doc.setFontSize(12);
+            doc.text(window.generatedResumeText, 10, 50);
+
+            // Save the PDF with a custom name
+            doc.save("resume.pdf");
+        });
+    </script>
+
+</body>
+
+</html>
